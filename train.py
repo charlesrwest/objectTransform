@@ -100,7 +100,7 @@ def ComputeLoss(lossOp, dataSetIterator, session):
 def ReportValidationLoss(lossOp, dataSetIterator, epoch, session):
     validation_loss = ComputeLoss(lossOp, dataSetIterator, session)
 
-    message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Validation Loss: {1:>6.1}"
+    message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Validation Loss: {1}"
     print(message.format(epoch, validation_loss))
     sys.stdout.flush()
 
@@ -130,12 +130,12 @@ def Train(numberOfEpochs, checkpointPath, saver):
     for epoch in range(0, numberOfEpochs):
         #Training
         [_, training_loss] = TrainForEpoch(optimizer, loss, training_data_iterator, session)
-        message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1:>6.1}"
+        message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
         print(message.format(epoch, training_loss))
         sys.stdout.flush()
 
         #Validation and reporting
-        ReportValidationAccuracy(loss, validation_data_iterator, epoch, session)
+        ReportValidationLoss(loss, validation_data_iterator, epoch, session)
 
         #Checkpoint model
         saver.save(session, './object_transform-model')

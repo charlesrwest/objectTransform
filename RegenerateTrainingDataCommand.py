@@ -1,0 +1,3 @@
+import RegenerateTrainingData
+
+RegenerateTrainingData.RegenerateTrainingData()

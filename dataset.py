@@ -6,7 +6,7 @@ def decode(serialized_example):
     features = tf.parse_single_example(
         serialized_example, 
         features={
-            'expected_output': tf.FixedLenFeature([12], tf.float32), 
+            'expected_output': tf.FixedLenFeature([6], tf.float32), 
             'image': tf.FixedLenFeature([], tf.string)
         })
 

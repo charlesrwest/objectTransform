@@ -7,6 +7,8 @@ import random
 import numpy as np
 from time import gmtime, strftime
 import sys
+import json
+import RegenerateTrainingData
 
 #Adding seed so that random initialization is consistent
 from numpy.random import seed
@@ -104,6 +106,34 @@ def ReportValidationLoss(lossOp, dataSetIterator, epoch, session):
     print(message.format(epoch, validation_loss))
     sys.stdout.flush()
 
+def SaveOutputsAsJson(fileName, outputOp, dataSetIterator, session):
+    session.run(dataSetIterator.initializer)
+    images_op, labels_op = dataSetIterator.get_next()
+
+    dictionary = {}
+
+    batch_number = 0
+    while True:
+       try:
+           images, labels = session.run([images_op, labels_op])
+
+           output = session.run(outputOp, feed_dict={x: images, y_true: labels})
+
+           for i in range(0, output.shape[0]-1):
+               base_name = "example_" + str(batch_number) + "_" + str(i) + "_";
+               dictionary[base_name+"label"] = labels[i, :].tolist()
+               dictionary[base_name+"output"] = output[i, :].tolist()
+           batch_number += 1
+       except tf.errors.OutOfRangeError:
+           break
+    json_string = json.dumps(dictionary, sort_keys=True)
+
+    json_file = open(fileName, "w")
+
+    json_file.write(json_string)
+
+    json_file.close()
+
 
 def TrainForEpoch(trainOp, lossOp, dataSetIterator, session):
     number_of_iterations = 0
@@ -124,34 +154,35 @@ def TrainForEpoch(trainOp, lossOp, dataSetIterator, session):
 
     return number_of_iterations, loss
 
-def Train(numberOfEpochs, checkpointPath, saver):
-    ReportValidationLoss(loss, validation_data_iterator, -1, session)
+def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver):
+    
+    for dataset_index in range(0, numberOfDatasets):
+        #Generate a new set of training data
+        RegenerateTrainingData.RegenerateTrainingData()
 
-    for epoch in range(0, numberOfEpochs):
-        #Training
-        [_, training_loss] = TrainForEpoch(optimizer, loss, training_data_iterator, session)
-        message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
-        print(message.format(epoch, training_loss))
-        sys.stdout.flush()
+        #Setup reading from tfrecords file
+        training_data_iterator = dataset.GetInputs(batch_size, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetTrain2Axis.tfrecords")
+        validation_data_iterator = dataset.GetInputs(batch_size, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetValidate2Axis.tfrecords")    
 
-        #Validation and reporting
-        ReportValidationLoss(loss, validation_data_iterator, epoch, session)
+        for epoch in range(0, numberOfEpochPerDataset):
+            #Training
+            [_, training_loss] = TrainForEpoch(optimizer, loss, training_data_iterator, session)
+            message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
+            print(message.format(epoch, training_loss))
+            sys.stdout.flush()
 
-        #Checkpoint model
-        saver.save(session, './object_transform-model')
+            #Validation and reporting
+            ReportValidationLoss(loss, validation_data_iterator, epoch, session)
+            SaveOutputsAsJson("results/results"+ str(epoch) +".json", fc0, validation_data_iterator, session)
+
+            #Checkpoint model
+            saver.save(session, './object_transform-model')
 
 session = tf.Session()
 
-#Setup reading from tfrecords file
-training_data_iterator = dataset.GetInputs(batch_size, 1, sys.argv[1])
-validation_data_iterator = dataset.GetInputs(batch_size, 1, sys.argv[2])
-
-session.run(training_data_iterator.initializer)
-
-train_images, train_labels = training_data_iterator.get_next()
 
 #Make the network
-x, y_true, fc0, loss = ConstructNetwork(img_size, num_channels, 12)
+x, y_true, fc0, loss = ConstructNetwork(img_size, num_channels, 6)
 
 session.run(tf.global_variables_initializer())
 
@@ -163,7 +194,9 @@ session.run(tf.global_variables_initializer())
 #Train the network with checkpointing and logging
 saver = tf.train.Saver()
 
-Train(100, './object_transform-model', saver)
+
+
+Train(5, 1000, './object_transform-model', saver)
 
 
 

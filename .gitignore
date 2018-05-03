@@ -3,3 +3,4 @@
 *.meta*
 *.index*
 checkpoint
+results/*

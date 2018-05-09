@@ -35,11 +35,11 @@ def ConvertToTfRecord(folderPath, outputFilePath, targetWidth, targetHeight):
     #Load the associated images and save them with the given expected output
 
     i = 0
-    for file_name, expected_output in labels.iteritems():
+    for file_name, expected_output in labels.items():
         try:
             # print how many images are saved every 1000 images
             if not i % 1000:
-                print 'Train data: {}/{}'.format(i, len(labels))
+                print('Train data: {}/{}'.format(i, len(labels)))
                 sys.stdout.flush()
 
             # Load the image

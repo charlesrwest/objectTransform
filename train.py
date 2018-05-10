@@ -196,7 +196,7 @@ saver = tf.train.Saver()
 
 
 
-Train(5, 1000, './object_transform-model', saver)
+Train(1, 1000000, './object_transform-model', saver)
 
 
 

@@ -127,7 +127,7 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
         current_frame_number = example_index+1        
         bpy.context.scene.frame_set(current_frame_number)
 
-        example_name = "example" + str(example_index) + ".png"
+        example_name = "example" + str(current_frame_number) + ".png"
         relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
         relative_matrix_orientation = relative_euler_orientation.to_matrix()
         bpy.data.objects[objectName].keyframe_insert(data_path='location', index=-1 )
@@ -163,4 +163,4 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     json_file.close()
 
 start = time.time()
-GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)
+GenerateExamples(50000, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)

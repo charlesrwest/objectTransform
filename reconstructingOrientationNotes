@@ -1,0 +1,21 @@
+x_vector = Vector((-0.21318386495113373, 0.9761682152748108, 0.04059811308979988))
+y_vector = Vector((-0.5727884769439697, -0.15853753685951233, 0.8042258024215698))
+
+z_vector = x_vector.cross(y_vector)
+
+relative_matrix_orientation[0][0] = x_vector[0]
+relative_matrix_orientation[1][0] = x_vector[1]
+relative_matrix_orientation[2][0] = x_vector[2]
+
+relative_matrix_orientation[0][1] = y_vector[0]
+relative_matrix_orientation[1][1] = y_vector[1]
+relative_matrix_orientation[2][1] = y_vector[2]
+
+relative_matrix_orientation[0][2] = z_vector[0]
+relative_matrix_orientation[1][2] = z_vector[1]
+relative_matrix_orientation[2][2] = z_vector[2]
+
+euler_orientation = relative_matrix_orientation.to_euler()
+
+bpy.data.objects["Petshop-cat-figurine"].rotation_euler = euler_orientation
+bpy.context.scene.update()

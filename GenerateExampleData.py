@@ -96,7 +96,8 @@ def PerturbInsideCameraView(minCenterDistance, maxCenterDistance, camera, obj):
         bpy.context.scene.update()
         #print("Updating scene  " + str((time.time() - start )*1000.0) + " milliseconds")
 
-        obj.location = camera.location + relative_vector
+        #Temporarily disabling translation for debugging
+        #obj.location = camera.location + relative_vector
         obj.rotation_euler = relative_euler_orientation
 
         #Update world matrix of object to match
@@ -157,10 +158,10 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     bpy.ops.render.render( animation=True, write_still=True )
 
     #Store labels in JSON file
-    json_string = json.dumps(results_map, sort_keys=True)
+    json_string = json.dumps(results_map, sort_keys=True, indent=4)
     json_file = open(directoryPath+"/labels.json", "w")
     json_file.write(json_string)
     json_file.close()
 
 start = time.time()
-GenerateExamples(50000, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)
+GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)

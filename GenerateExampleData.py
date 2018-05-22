@@ -97,7 +97,7 @@ def PerturbInsideCameraView(minCenterDistance, maxCenterDistance, camera, obj):
         #print("Updating scene  " + str((time.time() - start )*1000.0) + " milliseconds")
 
         #Temporarily disabling translation for debugging
-        #obj.location = camera.location + relative_vector
+        obj.location = camera.location + relative_vector
         obj.rotation_euler = relative_euler_orientation
 
         #Update world matrix of object to match
@@ -164,4 +164,4 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     json_file.close()
 
 start = time.time()
-GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)
+GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 2.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)

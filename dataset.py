@@ -1,4 +1,5 @@
 import tensorflow as tf
+import Parameters
 
 """This function converts a Example protobuf object to a value in tensorflow """
 def decode(serialized_example):
@@ -6,7 +7,7 @@ def decode(serialized_example):
     features = tf.parse_single_example(
         serialized_example, 
         features={
-            'expected_output': tf.FixedLenFeature([6], tf.float32), 
+            'expected_output': tf.FixedLenFeature([Parameters.NUMBER_OF_NETWORK_OUTPUTS], tf.float32), 
             'image': tf.FixedLenFeature([], tf.string)
         })
 

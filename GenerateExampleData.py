@@ -8,6 +8,7 @@ import math
 import json
 
 import time
+import Parameters
 
 #cam = bpy.data.objects['Camera']
 #obj = bpy.data.objects['Petshop-cat-figurine']
@@ -116,7 +117,7 @@ def PerturbInsideCameraView(minCenterDistance, maxCenterDistance, camera, obj):
 
 #Multiplies the location of object by the normalization factor before storing it in JSON
 #Currently requires camera to be at origin without rotation
-def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxDistance, locationNormalizationFactor, directoryPath, includeLocation):
+def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxDistance, locationNormalizationFactor, directoryPath, includeLocation, includeRotation):
     #Error on first render, so skip writing that one
     bpy.ops.render.render( write_still=False )
 
@@ -136,11 +137,22 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
         bpy.data.objects[objectName].keyframe_insert(data_path='scale', index=-1)
 
         #Store data for label (location, X axis, Y axis)
+        output_list = []
+        
         if(includeLocation):
-            results_map[example_name] = (relative_vector.x*locationNormalizationFactor, relative_vector.y*locationNormalizationFactor, relative_vector.z*locationNormalizationFactor, relative_matrix_orientation[0][0], relative_matrix_orientation[1][0], relative_matrix_orientation[2][0], relative_matrix_orientation[0][1], relative_matrix_orientation[1][1], relative_matrix_orientation[2][1])
-        else:
-            results_map[example_name] = (relative_matrix_orientation[0][0], relative_matrix_orientation[1][0], relative_matrix_orientation[2][0], relative_matrix_orientation[0][1], relative_matrix_orientation[1][1], relative_matrix_orientation[2][1])
+            output_list.append(relative_vector.x*locationNormalizationFactor)
+            output_list.append(relative_vector.y*locationNormalizationFactor)
+            output_list.append(relative_vector.z*locationNormalizationFactor)
 
+        if(includeRotation):
+            output_list.append(relative_matrix_orientation[0][0])
+            output_list.append(relative_matrix_orientation[1][0])
+            output_list.append(relative_matrix_orientation[2][0])
+            output_list.append(relative_matrix_orientation[0][1])
+            output_list.append(relative_matrix_orientation[1][1])
+            output_list.append(relative_matrix_orientation[2][1])
+
+        results_map[example_name] = output_list
     
     bpy.context.scene.frame_start = 1
     bpy.context.scene.frame_end = numberOfExamples
@@ -164,4 +176,4 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     json_file.close()
 
 start = time.time()
-GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 2.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", False)
+GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 2.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)

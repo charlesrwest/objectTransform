@@ -9,6 +9,7 @@ from time import gmtime, strftime
 import sys
 import json
 import RegenerateTrainingData
+import Parameters
 
 #Adding seed so that random initialization is consistent
 from numpy.random import seed
@@ -105,6 +106,7 @@ def ReportValidationLoss(lossOp, dataSetIterator, epoch, session):
     message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Validation Loss: {1}"
     print(message.format(epoch, validation_loss))
     sys.stdout.flush()
+    return validation_loss
 
 def SaveOutputsAsJson(fileName, outputOp, dataSetIterator, session):
     session.run(dataSetIterator.initializer)
@@ -155,34 +157,42 @@ def TrainForEpoch(trainOp, lossOp, dataSetIterator, session):
     return number_of_iterations, loss
 
 def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver):
-    
+    training_log_file = open('trainingLog', 'w')
+    training_log_file.write('Epoc, Training Loss, Validation Loss\n')
+
     for dataset_index in range(0, numberOfDatasets):
         #Generate a new set of training data
         RegenerateTrainingData.RegenerateTrainingData()
 
         #Setup reading from tfrecords file
-        training_data_iterator = dataset.GetInputs(batch_size, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetTrain2Axis.tfrecords")
-        validation_data_iterator = dataset.GetInputs(batch_size, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetValidate2Axis.tfrecords")    
+        training_data_iterator = dataset.GetInputs(batch_size, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetTrain.tfrecords")
+        validation_data_iterator = dataset.GetInputs(batch_size, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetValidate.tfrecords")    
 
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
             [_, training_loss] = TrainForEpoch(optimizer, loss, training_data_iterator, session)
             message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
             print(message.format(epoch, training_loss))
+            
             sys.stdout.flush()
 
             #Validation and reporting
-            ReportValidationLoss(loss, validation_data_iterator, epoch, session)
+            validation_loss = ReportValidationLoss(loss, validation_data_iterator, epoch, session)
             SaveOutputsAsJson("results/results"+ str(epoch) +".json", fc0, validation_data_iterator, session)
+            message = "{0}, {1}, {2}\n"
+            training_log_file.write(message.format(epoch, training_loss, validation_loss))
+            training_log_file.flush()
 
             #Checkpoint model
             saver.save(session, './object_transform-model')
+
+    training_log_file.close()
 
 session = tf.Session()
 
 
 #Make the network
-x, y_true, fc0, loss = ConstructNetwork(img_size, num_channels, 6)
+x, y_true, fc0, loss = ConstructNetwork(img_size, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS)
 
 session.run(tf.global_variables_initializer())
 

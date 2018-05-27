@@ -17,6 +17,6 @@ def RegenerateTrainingData():
     call(["/home/charlesrwest/cpp/libraries/blender-2.80-beta/blender", "/home/charlesrwest/cpp/projects/TensorFlow/objectTransform/catRepositionedTest.blend", "--background", "--python", "/home/charlesrwest/cpp/projects/TensorFlow/objectTransform/GenerateExampleData.py"], stdout=devnull, stderr=devnull)
 #    call(["/home/charlesrwest/cpp/libraries/blender-2.80-beta/blender", "/home/charlesrwest/cpp/projects/TensorFlow/objectTransform/catRepositionedTest.blend", "--background", "--python", "/home/charlesrwest/cpp/projects/TensorFlow/objectTransform/GenerateExampleData.py"])
 
-    convertToTfRecord.ConvertToTfRecord("/home/charlesrwest/cpp/Datasets/objectTransform/rawData", "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetTrain.tfrecords", 224, 224)
+    convertToTfRecord.ConvertToTfRecord("/home/charlesrwest/cpp/Datasets/objectTransform/rawData", "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetTrain.tfrecords", Parameters.IMAGE_SIZE, Parameters.IMAGE_SIZE)
 
     RemoveFilesInFolder("/home/charlesrwest/cpp/Datasets/objectTransform/rawData")

@@ -14,7 +14,7 @@ def decode(serialized_example):
     print(features)
 
     image = tf.decode_raw(features['image'], tf.float32)    
-    image = tf.reshape(image, [224, 224, 3])
+    image = tf.reshape(image, [Parameters.IMAGE_SIZE, Parameters.IMAGE_SIZE, 3])
 
     label = tf.cast(features['expected_output'], tf.float32)
     #label = tf.one_hot(label, 2, 1.0, 0.0) #Convert from integer labels to one hot representation

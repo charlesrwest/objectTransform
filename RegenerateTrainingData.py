@@ -4,6 +4,7 @@ import convertToTfRecord
 
 import os
 import glob
+import Parameters
 
 def RemoveFilesInFolder(folderPath):
     files = glob.glob(folderPath + "/*")

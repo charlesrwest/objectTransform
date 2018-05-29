@@ -158,7 +158,7 @@ def TrainForEpoch(trainOp, lossOp, dataSetIterator, inputVar, labelVar, session)
     return number_of_iterations, loss
 
 def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, trainingInput, trainingLabel, trainingOutput, trainingOp, trainingLoss, validationInput, validationLabel, validationOutput, validationLoss):
-    training_log_file = open('trainingLog', 'w')
+    training_log_file = open('trainingLog.csv', 'w')
     training_log_file.write('Epoc, Training Loss, Validation Loss\n')
 
     for dataset_index in range(0, numberOfDatasets):
@@ -193,7 +193,7 @@ session = tf.Session()
 
 
 #Make the network
-training_input, training_label, training_output, training_loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS, True)
+training_input, training_label, training_output, training_loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS, False)
 
 validation_input, validation_label, validation_output, validation_loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS, False)
 

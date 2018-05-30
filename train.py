@@ -193,7 +193,7 @@ session = tf.Session()
 
 
 #Make the network
-training_input, training_label, training_output, training_loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS, False)
+training_input, training_label, training_output, training_loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS, True)
 
 validation_input, validation_label, validation_output, validation_loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS, False)
 

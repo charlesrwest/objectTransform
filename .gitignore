@@ -5,4 +5,5 @@
 checkpoint
 results/*
 log
+trainingLog.csv
 trainingLog

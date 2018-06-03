@@ -10,6 +10,6 @@ if ROTATION_TRACKING_ENABLED :
     NUMBER_OF_NETWORK_OUTPUTS += 6
 
 
-INITIAL_TRAINING_RATE = 1e-3
+INITIAL_TRAINING_RATE = 5e-4
 BATCH_SIZE = 64
 IMAGE_SIZE = 224 #Need to update image generation to set image size according to this parameter

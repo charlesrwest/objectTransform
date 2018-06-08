@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, "/home/charlesrwest/cpp/projects/TensorFlow/objectTransform")
+
 import bpy
 import bmesh
 from mathutils import Vector

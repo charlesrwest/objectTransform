@@ -15,3 +15,4 @@ BATCH_SIZE = 64
 IMAGE_SIZE = 224 #Need to update image generation to set image size according to this parameter
 REGENERATE_TRAINING_DATA = False
 MAX_BATCHES_BEFORE_REPORTING = int(500/BATCH_SIZE)
+EXAMPLES_PER_EPOC = 2000000

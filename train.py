@@ -163,11 +163,12 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, trai
 
     for dataset_index in range(0, numberOfDatasets):
         #Generate a new set of training data
-        RegenerateTrainingData.RegenerateTrainingData()
+        if(Parameters.REGENERATE_TRAINING_DATA):
+            RegenerateTrainingData.RegenerateTrainingData("objectTransformDatasetTrain.tfrecords")
 
         #Setup reading from tfrecords file
-        training_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetTrain.tfrecords")
-        validation_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/cpp/Datasets/objectTransform/objectTransformDatasetValidate.tfrecords")    
+        training_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/storage/Datasets/objectTransform/objectTransformDatasetTrain.tfrecords")
+        validation_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/storage/Datasets/objectTransform/objectTransformDatasetValidate.tfrecords")    
 
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
@@ -209,7 +210,7 @@ saver = tf.train.Saver()
 
 
 
-Train(1, 1000000, './object_transform-model', saver, training_input, training_label, training_output, optimizer, training_loss, validation_input, validation_label, validation_output, validation_loss)
+Train(10, 1, './object_transform-model', saver, training_input, training_label, training_output, optimizer, training_loss, validation_input, validation_label, validation_output, validation_loss)
 
 
 

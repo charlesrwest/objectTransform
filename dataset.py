@@ -55,11 +55,11 @@ def GetInputs(batch_size, num_epochs, file_path):
 
         # map takes a python function and applies it to every sample
         dataset = dataset.map(decode, num_parallel_calls=12)
-        dataset = dataset.map(augment, num_parallel_calls=12)
+        #dataset = dataset.map(augment, num_parallel_calls=12)
         dataset = dataset.map(normalize, num_parallel_calls=12)
 
         #The parameter is the queue size
-        dataset = dataset.shuffle(50 + 3*batch_size)
+        #dataset = dataset.shuffle(50 + 3*batch_size) #Not needed do to single epoc
         dataset = dataset.batch(batch_size)
         dataset = dataset.prefetch(50 + 3*batch_size)
 

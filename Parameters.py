@@ -13,3 +13,5 @@ if ROTATION_TRACKING_ENABLED :
 INITIAL_TRAINING_RATE = 2e-4
 BATCH_SIZE = 64
 IMAGE_SIZE = 224 #Need to update image generation to set image size according to this parameter
+REGENERATE_TRAINING_DATA = False
+MAX_BATCHES_BEFORE_REPORTING = int(500/BATCH_SIZE)

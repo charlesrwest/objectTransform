@@ -1,3 +1,7 @@
+from sys import argv
 import RegenerateTrainingData
 
-RegenerateTrainingData.RegenerateTrainingData()
+#objectTransformDatasetTrain.tfrecords
+#objectTransformDatasetValidate.tfrecords
+
+RegenerateTrainingData.RegenerateTrainingData(argv[1])

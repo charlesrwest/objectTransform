@@ -176,4 +176,4 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     json_file.close()
 
 start = time.time()
-GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 2.0, 1.0, "/home/charlesrwest/cpp/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)
+GenerateExamples(10000, "Petshop-cat-figurine", "Camera", 1.0, 2.0, 1.0, "/home/charlesrwest/storage/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)

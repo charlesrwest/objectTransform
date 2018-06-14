@@ -1,3 +1,4 @@
+import datetime
 import sys
 sys.path.insert(0, "/home/charlesrwest/cpp/projects/TensorFlow/objectTransform")
 
@@ -125,14 +126,16 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     bpy.ops.render.render( write_still=False )
 
     results_map = dict()
-    #Setup keyframes for animation to produce images
-    bpy.data.scenes['Scene'].render.filepath = directoryPath + "/" + "example#"
     for example_index in range(0, numberOfExamples):
-        #Set keyframe
-        current_frame_number = example_index+1        
-        bpy.context.scene.frame_set(current_frame_number)
-
+        current_frame_number = example_index+1 
+        if (example_index % 1000) == 0:
+            print("Generated " + str(example_index) + " images at " + datetime.datetime.now().strftime("%I:%M%p:%S on %B %d, %Y"))
         example_name = "example" + str(current_frame_number) + ".png"
+        
+        #Render image
+        bpy.data.scenes['Scene'].render.filepath = directoryPath + "/" + example_name
+        bpy.ops.render.render( write_still=True )
+
         relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
         relative_matrix_orientation = relative_euler_orientation.to_matrix()
         bpy.data.objects[objectName].keyframe_insert(data_path='location', index=-1 )
@@ -156,21 +159,6 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
             output_list.append(relative_matrix_orientation[2][1])
 
         results_map[example_name] = output_list
-    
-    bpy.context.scene.frame_start = 1
-    bpy.context.scene.frame_end = numberOfExamples
-
-    #convert to NLA tracks instead of actions because actions aren't working for some reason
-    for ob in bpy.context.scene.objects:
-        if ob.animation_data is not None:
-            action = ob.animation_data.action
-            if action is not None:
-                track = ob.animation_data.nla_tracks.new()
-                track.strips.new(action.name, action.frame_range[0], action)
-                ob.animation_data.action = None
-
-    bpy.context.scene.update()     
-    bpy.ops.render.render( animation=True, write_still=True )
 
     #Store labels in JSON file
     json_string = json.dumps(results_map, sort_keys=True, indent=4)

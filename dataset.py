@@ -61,7 +61,7 @@ def GetInputs(batch_size, num_epochs, file_path):
         #The parameter is the queue size
         #dataset = dataset.shuffle(50 + 3*batch_size) #Not needed do to single epoc
         dataset = dataset.batch(batch_size)
-        dataset = dataset.prefetch(50 + 3*batch_size)
+        dataset = dataset.prefetch(batch_size)
 
         iterator = dataset.make_initializable_iterator()
     return iterator

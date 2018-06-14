@@ -138,17 +138,18 @@ def SaveOutputsAsJson(fileName, outputOp, dataSetIterator, inputVar, labelVar, s
     json_file.close()
 
 
-def TrainForEpoch(trainOp, lossOp, dataSetIterator, inputVar, labelVar, session):
+def TrainForNBatches(trainOp, lossOp, dataSetIterator, inputVar, labelVar, session, numberOfExamples):
     number_of_iterations = 0
     loss_sum = 0.0
-    session.run(dataSetIterator.initializer)
+
     images_op, labels_op = dataSetIterator.get_next()
 
-    while True:    
+    for example_index in range(0, numberOfExamples):    
         try:
             images, labels = session.run([images_op, labels_op])
         except tf.errors.OutOfRangeError:
-            break
+            session.run(dataSetIterator.initializer)
+            images_op, labels_op = dataSetIterator.get_next()
 
         [_, batch_loss] = session.run([trainOp, lossOp], feed_dict={inputVar: images, labelVar: labels})
         number_of_iterations += 1
@@ -170,9 +171,11 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, trai
         training_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/storage/Datasets/objectTransform/objectTransformDatasetTrain.tfrecords")
         validation_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/storage/Datasets/objectTransform/objectTransformDatasetValidate.tfrecords")    
 
+        session.run(training_data_iterator.initializer)
+
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
-            [_, training_loss] = TrainForEpoch(trainingOp, trainingLoss, training_data_iterator, trainingInput, trainingLabel, session)
+            [_, training_loss] = TrainForNBatches(trainingOp, trainingLoss, training_data_iterator, trainingInput, trainingLabel, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
             message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
             print(message.format(epoch, training_loss))
             

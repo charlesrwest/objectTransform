@@ -213,7 +213,7 @@ saver = tf.train.Saver()
 
 
 
-Train(Parameters.NUMBER_OF_REPORT_CYCLES, parameters.NUMBER_OF_DATA_GENERATION_CYCLES, './object_transform-model', saver, training_input, training_label, training_output, optimizer, training_loss, validation_input, validation_label, validation_output, validation_loss)
+Train(Parameters.NUMBER_OF_REPORT_CYCLES, Parameters.NUMBER_OF_DATA_GENERATION_CYCLES, './object_transform-model', saver, training_input, training_label, training_output, optimizer, training_loss, validation_input, validation_label, validation_output, validation_loss)
 
 
 

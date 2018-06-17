@@ -138,18 +138,17 @@ def SaveOutputsAsJson(fileName, outputOp, dataSetIterator, inputVar, labelVar, s
     json_file.close()
 
 
-def TrainForNBatches(trainOp, lossOp, dataSetIterator, inputVar, labelVar, session, numberOfExamples):
+def TrainForNBatches(trainOp, lossOp, imagesOp, labelsOp, inputVar, labelVar, session, numberOfExamples):
     number_of_iterations = 0
     loss_sum = 0.0
 
-    images_op, labels_op = dataSetIterator.get_next()
-
     for example_index in range(0, numberOfExamples):    
         try:
-            images, labels = session.run([images_op, labels_op])
-        except tf.errors.OutOfRangeError:
-            session.run(dataSetIterator.initializer)
-            images_op, labels_op = dataSetIterator.get_next()
+            images, labels = session.run([imagesOp, labelsOp])
+        except tf.errors.OutOfRangeError: # Let error happen, not suppose to hit data end here
+            #session.run(dataSetIterator.initializer)
+            #images_op, labels_op = dataSetIterator.get_next()
+            
 
         [_, batch_loss] = session.run([trainOp, lossOp], feed_dict={inputVar: images, labelVar: labels})
         number_of_iterations += 1
@@ -172,10 +171,11 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, trai
         validation_data_iterator = dataset.GetInputs(Parameters.BATCH_SIZE, 1, "/home/charlesrwest/storage/Datasets/objectTransform/objectTransformDatasetValidate.tfrecords")    
 
         session.run(training_data_iterator.initializer)
+        images_op, labels_op = training_data_iterator.get_next()
 
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
-            [_, training_loss] = TrainForNBatches(trainingOp, trainingLoss, training_data_iterator, trainingInput, trainingLabel, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
+            [_, training_loss] = TrainForNBatches(trainingOp, trainingLoss, images_op, labels_op, trainingInput, trainingLabel, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
             message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
             print(message.format(epoch, training_loss))
             

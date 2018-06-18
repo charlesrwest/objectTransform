@@ -176,8 +176,8 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, trai
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
             [_, training_loss] = TrainForNBatches(trainingOp, trainingLoss, images_op, labels_op, trainingInput, trainingLabel, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
-            message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
-            print(message.format(epoch, training_loss))
+            message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}, Step {3}"
+            print(message.format(epoch, training_loss, session.run(tf.train.get_global_step())))
             
             sys.stdout.flush()
 

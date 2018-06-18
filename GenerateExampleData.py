@@ -132,15 +132,12 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
             print("Generated " + str(example_index) + " images at " + datetime.datetime.now().strftime("%I:%M%p:%S on %B %d, %Y"))
         example_name = "example" + str(current_frame_number) + ".png"
         
+        relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
+        relative_matrix_orientation = relative_euler_orientation.to_matrix()
+        
         #Render image
         bpy.data.scenes['Scene'].render.filepath = directoryPath + "/" + example_name
         bpy.ops.render.render( write_still=True )
-
-        relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
-        relative_matrix_orientation = relative_euler_orientation.to_matrix()
-        bpy.data.objects[objectName].keyframe_insert(data_path='location', index=-1 )
-        bpy.data.objects[objectName].keyframe_insert(data_path='rotation_euler', index=-1)
-        bpy.data.objects[objectName].keyframe_insert(data_path='scale', index=-1)
 
         #Store data for label (location, X axis, Y axis)
         output_list = []

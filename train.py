@@ -25,17 +25,15 @@ def GetHeInitializer():
 
 def AddResidualModule(inputVariable, outputDepth, stride, isTraining):
     conv1 = tf.layers.conv2d(inputs=inputVariable, filters=outputDepth, kernel_size=[3, 3], padding="same", activation=tf.nn.relu, kernel_initializer=GetHeInitializer(), strides=(stride, stride))
-    batchnorm1 = tf.layers.batch_normalization(conv1, training=isTraining, momentum=.6)
-    conv2 = tf.layers.conv2d(inputs=batchnorm1, filters=outputDepth, kernel_size=[3, 3], padding="same", activation=tf.nn.relu, kernel_initializer=GetHeInitializer())
-    batchnorm2 = tf.layers.batch_normalization(conv2, training=isTraining, momentum=.6)
+    conv2 = tf.layers.conv2d(inputs=conv1, filters=outputDepth, kernel_size=[3, 3], padding="same", activation=tf.nn.relu, kernel_initializer=GetHeInitializer())
 
     if (stride != 1) or (inputVariable.get_shape()[3] != outputDepth):
         skip_conv = tf.layers.conv2d(inputs=inputVariable, filters=outputDepth, kernel_size=[1, 1], padding="same", strides=(stride, stride), activation=tf.nn.relu, kernel_initializer=GetHeInitializer())
-        sum_op = batchnorm2 + skip_conv
+        sum_op = conv2 + skip_conv
         relu_sum = tf.nn.relu(sum_op)
         return relu_sum
     else:
-        sum_op = batchnorm2 + inputVariable
+        sum_op = conv2 + inputVariable
         relu_sum = tf.nn.relu(sum_op)
         return relu_sum
 

@@ -50,9 +50,9 @@ def ConstructNetwork(imageSize, numberOfChannels, numberOfOutputs, isTraining):
         conv0 = tf.layers.conv2d(inputs=input_placeholder, filters=64, kernel_size=[7, 7], padding="same", activation=tf.nn.relu, kernel_initializer=GetHeInitializer(), strides=(2,2))
         layers.append(conv0)
 
-#    with tf.variable_scope('maxpool0', reuse=tf.AUTO_REUSE):
-#        maxpool0 = tf.layers.max_pooling2d(inputs=layers[-1], pool_size=[2,2], strides=2)
-#        layers.append(maxpool0)
+    with tf.variable_scope('maxpool0', reuse=tf.AUTO_REUSE):
+        maxpool0 = tf.layers.max_pooling2d(inputs=layers[-1], pool_size=[2,2], strides=2)
+        layers.append(maxpool0)
 
     with tf.variable_scope("res0_", reuse=tf.AUTO_REUSE):
         network_head = AddResidualModule(layers[-1], 64, 1, isTraining)

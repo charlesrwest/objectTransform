@@ -130,6 +130,13 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
         current_frame_number = example_index+1 
         if (example_index % 1000) == 0:
             print("Generated " + str(example_index) + " images at " + datetime.datetime.now().strftime("%I:%M%p:%S on %B %d, %Y"))
+            #Store labels in JSON file
+#            json_string = json.dumps(results_map, sort_keys=True, indent=4)
+            json_string = json.dumps(results_map)
+            json_file = open(directoryPath+"/labels.json", "w")
+            json_file.write(json_string)
+            json_file.close()
+
         example_name = "example" + str(current_frame_number) + ".png"
         
         relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
@@ -158,7 +165,8 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
         results_map[example_name] = output_list
 
     #Store labels in JSON file
-    json_string = json.dumps(results_map, sort_keys=True, indent=4)
+    #json_string = json.dumps(results_map, sort_keys=True, indent=4)
+    json_string = json.dumps(results_map)
     json_file = open(directoryPath+"/labels.json", "w")
     json_file.write(json_string)
     json_file.close()

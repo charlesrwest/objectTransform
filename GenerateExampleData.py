@@ -130,6 +130,8 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
         current_frame_number = example_index+1 
         if (example_index % 1000) == 0:
             print("Generated " + str(example_index) + " images at " + datetime.datetime.now().strftime("%I:%M%p:%S on %B %d, %Y"))
+
+        if (example_index % 100000) == 0:
             #Store labels in JSON file
 #            json_string = json.dumps(results_map, sort_keys=True, indent=4)
             json_string = json.dumps(results_map)

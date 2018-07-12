@@ -141,11 +141,11 @@ def TrainForNBatches(trainOp, lossOp, imagesOp, labelsOp, inputVar, labelVar, se
     loss_sum = 0.0
 
     for example_index in range(0, numberOfExamples):    
-#        try:
-        images, labels = session.run([imagesOp, labelsOp])
-#        except tf.errors.OutOfRangeError: # Let error happen, not suppose to hit data end here
-            #session.run(dataSetIterator.initializer)
-            #images_op, labels_op = dataSetIterator.get_next()
+        try:
+            images, labels = session.run([imagesOp, labelsOp])
+        except tf.errors.OutOfRangeError: # Let error happen, not suppose to hit data end here
+            session.run(dataSetIterator.initializer)
+            images_op, labels_op = dataSetIterator.get_next()
             
 
         [_, batch_loss] = session.run([trainOp, lossOp], feed_dict={inputVar: images, labelVar: labels})

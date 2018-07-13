@@ -13,9 +13,60 @@ import json
 
 import time
 import Parameters
+import os
 
 #cam = bpy.data.objects['Camera']
 #obj = bpy.data.objects['Petshop-cat-figurine']
+
+def RemoveImageFromMemory (passedName):
+    # Extra test because this can crash Blender.
+    img = bpy.data.images[passedName]
+    try:
+        img.user_clear()
+        can_continue = True
+    except:
+        can_continue = False
+    
+    if can_continue == True:
+        try:
+            bpy.data.images.remove(img, True)
+            result = True
+        except:
+            result = False
+    else:
+        result = False
+    return result
+
+def CollectBackgroundImagePaths(sourceDirectoryPath, imageExtensions):
+    file_paths = []
+
+    for root, dirs, files in os.walk(sourceDirectoryPath):
+        for file_name in files:
+            for extension in imageExtensions:
+                if file_name.endswith(extension):
+                    file_paths.append(root + "/" + file_name)
+    return file_paths
+
+def SetBackgroundImage(backgroundImagePath):
+    #Store reference to old image so it can be removed
+    old_image_name = bpy.data.materials[1].node_tree.nodes.get("Image Texture").image.name
+
+    #Load new image to be used
+    new_image = bpy.data.images.load(filepath = backgroundImagePath)
+
+    #Set the new image to be used
+    bpy.data.materials[1].node_tree.nodes.get("Image Texture").image = new_image
+
+    #Delete the old one from the file
+    remove_succeeded = RemoveImageFromMemory(old_image_name)
+
+    if not remove_succeeded:
+        print("Error removing " + old_image_name)
+    else:
+        print("Removing " + old_image_name + " worked")
+    #bpy.data.images[old_image_name].user_clear()
+    #bpy.data.images.remove(bpy.data.images[old_image_name])
+
 
 def object_center_in_camera_view(camera, obj):
     scene = bpy.context.scene
@@ -121,13 +172,19 @@ def PerturbInsideCameraView(minCenterDistance, maxCenterDistance, camera, obj):
 
 #Multiplies the location of object by the normalization factor before storing it in JSON
 #Currently requires camera to be at origin without rotation
-def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxDistance, locationNormalizationFactor, directoryPath, includeLocation, includeRotation):
+def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxDistance, locationNormalizationFactor, backgroundImagesDirectoryPath, outputDirectoryPath, includeLocation, includeRotation):
+    background_image_paths = CollectBackgroundImagePaths(backgroundImagesDirectoryPath, [".png", ".jpg"])
+
     #Error on first render, so skip writing that one
     bpy.ops.render.render( write_still=False )
 
     results_map = dict()
     for example_index in range(0, numberOfExamples):
         current_frame_number = example_index+1 
+
+#        if (example_index % 5) == 0:
+#            bpy.ops.wm.save_as_mainfile(filepath="/home/charlesrwest/Downloads/test_blend.blend")
+
         if (example_index % 1000) == 0:
             print("Generated " + str(example_index) + " images at " + datetime.datetime.now().strftime("%I:%M%p:%S on %B %d, %Y"))
 
@@ -135,17 +192,21 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
             #Store labels in JSON file
 #            json_string = json.dumps(results_map, sort_keys=True, indent=4)
             json_string = json.dumps(results_map)
-            json_file = open(directoryPath+"/labels.json", "w")
+            json_file = open(outputDirectoryPath+"/labels.json", "w")
             json_file.write(json_string)
             json_file.close()
 
         example_name = "example" + str(current_frame_number) + ".png"
+
+        #Set random background
+        random_image_path = random.choice(background_image_paths)
+        SetBackgroundImage(random_image_path)
         
         relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
         relative_matrix_orientation = relative_euler_orientation.to_matrix()
         
         #Render image
-        bpy.data.scenes['Scene'].render.filepath = directoryPath + "/" + example_name
+        bpy.data.scenes['Scene'].render.filepath = outputDirectoryPath + "/" + example_name
         bpy.ops.render.render( write_still=True )
 
         #Store data for label (location, X axis, Y axis)
@@ -165,13 +226,14 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
             output_list.append(relative_matrix_orientation[2][1])
 
         results_map[example_name] = output_list
+        print("Rendered " + example_name)
 
     #Store labels in JSON file
     #json_string = json.dumps(results_map, sort_keys=True, indent=4)
     json_string = json.dumps(results_map)
-    json_file = open(directoryPath+"/labels.json", "w")
+    json_file = open(outputDirectoryPath+"/labels.json", "w")
     json_file.write(json_string)
     json_file.close()
 
 start = time.time()
-GenerateExamples(Parameters.EXAMPLES_PER_EPOC, "Petshop-cat-figurine", "Camera", 1.0, 10.0, 1.0, "/home/charlesrwest/storage/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)
+GenerateExamples(Parameters.EXAMPLES_PER_EPOC, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/storage/Datasets/backgrounds/downloads/", "/home/charlesrwest/storage/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)

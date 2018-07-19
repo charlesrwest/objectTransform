@@ -199,8 +199,8 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
         example_name = "example" + str(current_frame_number) + ".png"
 
         #Set random background
-        random_image_path = random.choice(background_image_paths)
-        SetBackgroundImage(random_image_path)
+#        random_image_path = random.choice(background_image_paths)
+#        SetBackgroundImage(random_image_path)
         
         relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
         relative_matrix_orientation = relative_euler_orientation.to_matrix()
@@ -236,4 +236,4 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
     json_file.close()
 
 start = time.time()
-GenerateExamples(Parameters.EXAMPLES_PER_EPOC, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/storage/Datasets/backgrounds/downloads/", "/home/charlesrwest/storage/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)
+GenerateExamples(Parameters.EXAMPLES_PER_EPOC, "Petshop-cat-figurine", "Camera", 1.0, 5.0, 1.0, "/home/charlesrwest/storage/Datasets/backgrounds/downloads", "/home/charlesrwest/storage/Datasets/objectTransform/rawData", Parameters.TRANSLATION_TRACKING_ENABLED, Parameters.ROTATION_TRACKING_ENABLED)

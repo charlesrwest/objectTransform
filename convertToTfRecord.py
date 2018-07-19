@@ -47,7 +47,8 @@ def ConvertToTfRecord(folderPath, outputFilePath, targetWidth, targetHeight):
             img = LoadImage(file_path, targetWidth, targetHeight)
             # Create a feature
             feature = {'expected_output': ConvertToFloatListFeature(expected_output),
-                   'image': ConvertToBytesFeature(tf.compat.as_bytes(img.tostring()))}
+                   'image': ConvertToBytesFeature(tf.compat.as_bytes(img.tostring())),
+                    'image_name': ConvertToBytesFeature(tf.compat.as_bytes(file_name))}
             # Create an example protocol buffer
             example = tf.train.Example(features=tf.train.Features(feature=feature))
 

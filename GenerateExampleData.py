@@ -198,9 +198,13 @@ def GenerateExamples(numberOfExamples, objectName, cameraName, minDistance, maxD
 
         example_name = "example" + str(current_frame_number) + ".png"
 
-        #Set random background
-#        random_image_path = random.choice(background_image_paths)
-#        SetBackgroundImage(random_image_path)
+        while True:
+            try:
+                random_image_path = random.choice(background_image_paths)
+                SetBackgroundImage(random_image_path)
+                break
+            except:
+                pass
         
         relative_vector, relative_euler_orientation = PerturbInsideCameraView(minDistance, maxDistance, bpy.data.objects[cameraName], bpy.data.objects[objectName])
         relative_matrix_orientation = relative_euler_orientation.to_matrix()

@@ -182,7 +182,7 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, outp
 
             #Validation and reporting
             validation_loss = ReportValidationLoss(lossOp, imageOp, labelOp, validationDatasetInitOp, epoch, inputPlaceholder, labelPlaceholder, session)
-            SaveOutputsAsJson("results/results"+ str(epoch) +".json", outputOp, lossOp, validationDatasetInitOp, imageOp, labelOp, imageNameOp, inputPlaceholder, labelPlaceholder, session)
+            SaveOutputsAsJson("results/results"+ str(epoch) +".json", outputOp, lossOp, imageOp, labelOp, imageNameOp, validationDatasetInitOp, inputPlaceholder, labelPlaceholder, session)
             message = "{0}, {1}, {2}\n"
             training_log_file.write(message.format(epoch, training_loss, validation_loss))
             training_log_file.flush()

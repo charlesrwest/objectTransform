@@ -174,15 +174,15 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, outp
 
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
-            [_, training_loss] = TrainForNBatches(trainingOp, lossOp, imageOp, labelOp, train_init_op, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
+            [_, training_loss] = TrainForNBatches(trainingOp, lossOp, imageOp, labelOp, train_init_op, inputPlaceholder, labelPlaceholder, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
             message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
             print(message.format(epoch, training_loss))
             
             sys.stdout.flush()
 
             #Validation and reporting
-            validation_loss = ReportValidationLoss(lossOp, imageOp, labelOp, validationDatasetInitOp, epoch, session)
-            SaveOutputsAsJson("results/results"+ str(epoch) +".json", outputOp, lossOp, validationDatasetInitOp, imageOp, labelOp, imageNameOp, session)
+            validation_loss = ReportValidationLoss(lossOp, imageOp, labelOp, validationDatasetInitOp, epoch, inputPlaceholder, labelPlaceholder, session)
+            SaveOutputsAsJson("results/results"+ str(epoch) +".json", outputOp, lossOp, validationDatasetInitOp, imageOp, labelOp, imageNameOp, inputPlaceholder, labelPlaceholder, session)
             message = "{0}, {1}, {2}\n"
             training_log_file.write(message.format(epoch, training_loss, validation_loss))
             training_log_file.flush()

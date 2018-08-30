@@ -38,14 +38,18 @@ def AddResidualModule(inputVariable, outputDepth, stride, isTraining):
         return relu_sum
 
 
-def ConstructNetwork(inputOp, labelOp, imageSize, numberOfChannels, numberOfOutputs):
+def ConstructNetwork(imageSize, numberOfChannels, numberOfOutputs):
+    input_placeholder = tf.placeholder(tf.float32, shape=[None, imageSize, imageSize, numberOfChannels], name='input')
+
+    #Labels
+    y_true = tf.placeholder(tf.float32, shape = [None, numberOfOutputs], name = 'y_true')
 
     is_training_placeholder = tf.placeholder(tf.bool, shape=[1], name='is_training')
 
     layers = []
 
     with tf.variable_scope('conv0', reuse=tf.AUTO_REUSE):
-        conv0 = tf.layers.conv2d(inputs=inputOp, filters=64, kernel_size=[7, 7], padding="same", activation=tf.nn.relu, kernel_initializer=GetHeInitializer(), strides=(2,2))
+        conv0 = tf.layers.conv2d(inputs=input_placeholder, filters=64, kernel_size=[7, 7], padding="same", activation=tf.nn.relu, kernel_initializer=GetHeInitializer(), strides=(2,2))
         layers.append(conv0)
 
     with tf.variable_scope('maxpool0', reuse=tf.AUTO_REUSE):
@@ -67,11 +71,9 @@ def ConstructNetwork(inputOp, labelOp, imageSize, numberOfChannels, numberOfOutp
         flat = tf.reshape(layers[-1], [-1, layers[-1].get_shape()[1:4].num_elements()])
         fc0 = tf.layers.dense(inputs=flat, units=numberOfOutputs, kernel_initializer=GetHeInitializer())
 
-        loss = tf.reduce_mean(tf.squared_difference(fc0, labelOp))
+        loss = tf.reduce_mean(tf.squared_difference(fc0, y_true))
 
-        print("Output name: " + str(fc0))
-
-        return is_training_placeholder, fc0, loss
+        return is_training_placeholder, input_placeholder, y_true, fc0, loss
 
 def AddOptimizer(fc_network_output_op, loss_operator):
 
@@ -81,14 +83,15 @@ def AddOptimizer(fc_network_output_op, loss_operator):
         optimizer = tf.train.AdamOptimizer(learning_rate=Parameters.INITIAL_TRAINING_RATE).minimize(loss_operator)
         return optimizer
 
-def ComputeLoss(lossOp, dataSetInitializer, session):
+def ComputeLoss(lossOp, inputOp, labelOp, dataSetInitializer, session):
     epoch_count = 0
     loss_sum = 0.0
     session.run(dataSetInitializer)
 
     while True:
        try:
-           loss_sum += session.run(lossOp)
+           images, labels = session.run([inputOp, labelOp])
+           loss_sum += session.run(lossOp, feed_dict={inputVar: images, labelVar: labels})
            epoch_count += 1
        except tf.errors.OutOfRangeError:
            break
@@ -96,15 +99,15 @@ def ComputeLoss(lossOp, dataSetInitializer, session):
     loss = loss_sum/epoch_count
     return loss
 
-def ReportValidationLoss(lossOp, dataSetInitializer, epoch, session):
-    validation_loss = ComputeLoss(lossOp, dataSetInitializer, session)
+def ReportValidationLoss(lossOp, inputOp, labelOp, dataSetInitializer, epoch, session):
+    validation_loss = ComputeLoss(lossOp, inputOp, labelOp, dataSetInitializer, session)
 
     message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Validation Loss: {1}"
     print(message.format(epoch, validation_loss))
     sys.stdout.flush()
     return validation_loss
 
-def SaveOutputsAsJson(fileName, outputOp, lossOp, dataSetInitializer, labelOp, imageNameOp, session):
+def SaveOutputsAsJson(fileName, outputOp, lossOp, inputOp, labelOp, imageNameOp, dataSetInitializer, session):
     session.run(dataSetInitializer)
 
     dictionary = {}
@@ -112,7 +115,9 @@ def SaveOutputsAsJson(fileName, outputOp, lossOp, dataSetInitializer, labelOp, i
     batch_number = 0
     while True:
        try:
-           output, labels, image_names, losses = session.run([outputOp, labelOp, imageNameOp, lossOp])
+           images, labels, image_names = session.run([inputOp, labelOp, imageNameOp])
+
+           output, losses = session.run([outputOp, lossOp], feed_dict={inputVar: images, labelVar: labels})
 
            for i in range(0, output.shape[0]):
                base_name = image_names[i, 0].decode('UTF-8')
@@ -131,13 +136,14 @@ def SaveOutputsAsJson(fileName, outputOp, lossOp, dataSetInitializer, labelOp, i
     json_file.close()
 
 
-def TrainForNBatches(trainOp, lossOp, datasetInitializer, session, numberOfBatches):
+def TrainForNBatches(trainOp, lossOp, inputOp, labelOp, datasetInitializer, session, numberOfBatches):
     number_of_iterations = 0
     loss_sum = 0.0
 
     for example_index in range(0, numberOfBatches):    
         try:
-            [_, batch_loss] = session.run([trainOp, lossOp])
+            images, labels = session.run([inputOp, labelOp])
+            [_, batch_loss] = session.run([trainOp, lossOp], feed_dict={inputVar: images, labelVar: labels})
             number_of_iterations += 1
             loss_sum += batch_loss
         except tf.errors.OutOfRangeError: # Let error happen, not suppose to hit data end here
@@ -148,7 +154,7 @@ def TrainForNBatches(trainOp, lossOp, datasetInitializer, session, numberOfBatch
 
     return number_of_iterations, loss
 
-def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, outputOp, trainingOp, lossOp, dataIterator, validationDatasetInitOp, isTrainingPlaceHolder, labelOp, imageNameOp):
+def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, outputOp, trainingOp, lossOp, dataIterator, validationDatasetInitOp, isTrainingPlaceHolder, imageOp, labelOp, imageNameOp):
     old_validation_loss = sys.float_info.max;
     training_log_file = open('trainingLog.csv', 'w')
     training_log_file.write('Epoc, Training Loss, Validation Loss\n')
@@ -168,15 +174,15 @@ def Train(numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, outp
 
         for epoch in range(0, numberOfEpochPerDataset):
             #Training
-            [_, training_loss] = TrainForNBatches(trainingOp, lossOp, train_init_op, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
+            [_, training_loss] = TrainForNBatches(trainingOp, lossOp, imageOp, labelOp, train_init_op, session, Parameters.MAX_BATCHES_BEFORE_REPORTING)
             message = "Training Epoch {0} --- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) +" --- Training Loss: {1}"
             print(message.format(epoch, training_loss))
             
             sys.stdout.flush()
 
             #Validation and reporting
-            validation_loss = ReportValidationLoss(lossOp, validationDatasetInitOp, epoch, session)
-            SaveOutputsAsJson("results/results"+ str(epoch) +".json", outputOp, lossOp, validationDatasetInitOp, labelOp, imageNameOp, session)
+            validation_loss = ReportValidationLoss(lossOp, imageOp, labelOp, validationDatasetInitOp, epoch, session)
+            SaveOutputsAsJson("results/results"+ str(epoch) +".json", outputOp, lossOp, validationDatasetInitOp, imageOp, labelOp, imageNameOp, session)
             message = "{0}, {1}, {2}\n"
             training_log_file.write(message.format(epoch, training_loss, validation_loss))
             training_log_file.flush()
@@ -200,7 +206,7 @@ images, image_names, labels  = iterator.get_next()
 validation_init_op = iterator.make_initializer(validation_dataset)
 
 #Make the network
-is_training_placeholder, output, loss = ConstructNetwork(images, labels, Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS)
+is_training_placeholder, output, loss = ConstructNetwork(labels, Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS)
 
 session.run(tf.global_variables_initializer())
 
@@ -214,7 +220,7 @@ saver = tf.train.Saver()
 
 
 #numberOfEpochPerDataset, numberOfDatasets, checkpointPath, saver, outputOp, trainingOp, lossOp, dataIterator, validationDatasetInitOp, isTrainingPlaceHolder
-Train(Parameters.NUMBER_OF_REPORT_CYCLES, Parameters.NUMBER_OF_DATA_GENERATION_CYCLES, './object_transform-model', saver, output, optimizer, loss, iterator, validation_init_op, is_training_placeholder, labels, image_names)
+Train(Parameters.NUMBER_OF_REPORT_CYCLES, Parameters.NUMBER_OF_DATA_GENERATION_CYCLES, './object_transform-model', saver, output, optimizer, loss, iterator, validation_init_op, is_training_placeholder, images, labels, image_names)
 
 
 

@@ -206,7 +206,7 @@ images, image_names, labels  = iterator.get_next()
 validation_init_op = iterator.make_initializer(validation_dataset)
 
 #Make the network
-is_training_placeholder, output, loss = ConstructNetwork(labels, Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS)
+is_training_placeholder, output, loss = ConstructNetwork(Parameters.IMAGE_SIZE, num_channels, Parameters.NUMBER_OF_NETWORK_OUTPUTS)
 
 session.run(tf.global_variables_initializer())
 
